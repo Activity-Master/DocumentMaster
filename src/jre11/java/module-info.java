@@ -1,3 +1,3 @@
-module com.armineasy.activitymaster.documents {
+module com.guicedee.activitymaster.documents {
 
 }
