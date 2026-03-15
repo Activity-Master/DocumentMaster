@@ -12,7 +12,12 @@
     <artifactId>document-master</artifactId>
     <packaging>jar</packaging>
     <name>Document Master</name>
-	
+
+    <properties>
+        <project.scm.nameUrl>/Activity-Master/DocumentsMaster</project.scm.nameUrl>
+    </properties>
+
+
     <dependencies>
      
     </dependencies>
