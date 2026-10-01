@@ -7,18 +7,58 @@
         <groupId>com.activity-master</groupId>
         <artifactId>activitymaster-group</artifactId>
         <version>3.0.0-SNAPSHOT</version>
+        <relativePath>../parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>document-master</artifactId>
     <packaging>jar</packaging>
     <name>Document Master</name>
 
+
     <properties>
-        <project.scm.nameUrl>/Activity-Master/DocumentsMaster</project.scm.nameUrl>
+        <project.scm.nameUrl>/Activity-Master/DocumentMaster</project.scm.nameUrl>
     </properties>
 
-
+    <description>FSDM document resources, categories, buckets and ratings</description>
     <dependencies>
-     
+        <dependency>
+            <groupId>com.guicedee</groupId>
+            <artifactId>graphql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.guicedee</groupId>
+            <artifactId>rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.activity-master</groupId>
+            <artifactId>activity-master</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.guicedee.modules.services</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+    <build>
+        <testResources>
+            <testResource><directory>src/test/resources</directory></testResource>
+            <testResource>
+                <directory>../core/src/test/resources</directory>
+                <includes>
+                    <include>META-INF/persistence.xml</include>
+                    <include>ehcache.xml</include>
+                </includes>
+            </testResource>
+        </testResources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                    <argLine>--add-reads org.jboss.logging=org.hibernate.reactive --add-reads org.hibernate.orm.core=com.guicedee.activitymaster.fsdm</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
