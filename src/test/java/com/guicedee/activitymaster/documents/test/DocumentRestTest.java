@@ -42,7 +42,7 @@ class DocumentRestTest {
     @AfterAll void closeClient() { if (client != null) client.close(); }
     private DocumentIdentity identity(UUID party) {
         return new DocumentIdentity(party, fixture.enterpriseId,
-                new ActivityScope.Context(ActivityScope.Realm.WORK, fixture.enterpriseId), fixture.token);
+                new ActivityScope.Context(ActivityScope.Realm.WORK, fixture.enterpriseId), fixture.tokenFor(party));
     }
     private HttpRequest request(String method, String path, String credential, String json) {
         var request = HttpRequest.newBuilder(URI.create(base + path)).timeout(Duration.ofSeconds(15));

@@ -26,7 +26,7 @@ class DocumentVersionTest {
         owner = identity(fixture.actorId); reader = identity(fixture.recipientId); outsider = identity(fixture.outsiderId);
     }
     private DocumentIdentity identity(UUID party) {
-        return new DocumentIdentity(party, fixture.enterpriseId, new ActivityScope.Context(ActivityScope.Realm.WORK, fixture.enterpriseId), fixture.token);
+        return new DocumentIdentity(party, fixture.enterpriseId, new ActivityScope.Context(ActivityScope.Realm.WORK, fixture.enterpriseId), fixture.tokenFor(party));
     }
     private Bucket bucket() {
         return fixture.run(c -> service.createBucket(c.getItem1(), c.getItem3(), owner, new CreateBucket("SCD versions", BucketKind.BUCKET)));

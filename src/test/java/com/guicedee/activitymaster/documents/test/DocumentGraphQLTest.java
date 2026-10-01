@@ -49,7 +49,7 @@ class DocumentGraphQLTest {
     }
     @AfterAll void closeClient() { if (client != null) client.close(); }
     private DocumentIdentity identity(UUID party, UUID enterprise) {
-        return new DocumentIdentity(party, enterprise, new ActivityScope.Context(ActivityScope.Realm.WORK, enterprise), fixture.token);
+        return new DocumentIdentity(party, enterprise, new ActivityScope.Context(ActivityScope.Realm.WORK, enterprise), fixture.tokenFor(party));
     }
     private JsonNode execute(String query, Map<String, Object> variables, String credential) throws Exception {
         var request = HttpRequest.newBuilder(endpoint).timeout(Duration.ofSeconds(30))

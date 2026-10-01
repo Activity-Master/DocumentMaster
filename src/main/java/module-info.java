@@ -13,7 +13,8 @@ module com.guicedee.activitymaster.documents {
         with com.guicedee.activitymaster.documents.graphql.DocumentGraphQLSchemaProvider;
     provides com.guicedee.client.services.lifecycle.IGuiceModule with com.guicedee.activitymaster.documents.DocumentModule;
     provides com.guicedee.client.services.config.IGuiceScanModuleInclusions with com.guicedee.activitymaster.documents.DocumentInclusionModule;
-    provides com.guicedee.activitymaster.fsdm.client.services.systems.IMasterSystem with com.guicedee.activitymaster.documents.DocumentSystem;
-    provides com.guicedee.activitymaster.fsdm.client.services.systems.ISystemUpdate with com.guicedee.activitymaster.documents.DocumentInstall,
+    provides com.guicedee.activitymaster.fsdm.client.services.systems.IMasterPlugin with com.guicedee.activitymaster.documents.DocumentSystem;
+    provides com.guicedee.activitymaster.fsdm.client.services.systems.ISystemUpdate with com.guicedee.activitymaster.documents.DocumentPluginInstall,
+            com.guicedee.activitymaster.documents.DocumentInstall,
         com.guicedee.activitymaster.documents.DocumentVersionInstall;
 }

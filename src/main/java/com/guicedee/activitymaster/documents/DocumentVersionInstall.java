@@ -14,7 +14,7 @@ import static com.guicedee.activitymaster.fsdm.client.services.IActivityMasterSe
 public final class DocumentVersionInstall implements ISystemUpdate {
     @Override public Uni<Boolean> update(Mutiny.StatelessSession session, IEnterprise<?, ?> enterprise) {
         return getISystem(session, DocumentSystem.NAME, enterprise)
-                .chain(system -> getISystemToken(session, DocumentSystem.NAME, enterprise).chain(token ->
+                .chain(system -> getISystemToken(session, com.guicedee.activitymaster.fsdm.client.services.ISystemsService.ActivityMasterSystemName, enterprise).chain(token ->
                         IGuiceContext.get(IClassificationService.class).create(session, DocumentTaxonomy.Version.classificationName(),
                                 DocumentTaxonomy.Version.classificationName(), DocumentTaxonomy.Version.concept, system, token)))
                 .replaceWith(true);

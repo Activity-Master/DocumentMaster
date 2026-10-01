@@ -1,8 +1,18 @@
 # Document Master
 
+Document Master is an independently discovered ActivityMaster plugin, never an
+IMasterSystem. Runtime calls require a verified organic user's credential, a
+current installation on the authorized party, individual dependency consent and
+administrator policy, in addition to the existing domain/row permissions. The
+identity's optional installationPartyId defaults to the verified party; hosts
+must verify membership before selecting an organization installation. Legacy
+System credentials are retired by forward updates while registration IDs and
+domain data are retained. Provisioning grants no user installation or consent.
+
+
 `com.activity-master:document-master` provides stateless document storage and organization
 on the internal FSDM. Its JPMS module is `com.guicedee.activitymaster.documents`; the
-registered system is `Document Master`. The ActivityMaster BOM manages its version.
+registered plugin is `Document Master`. The ActivityMaster BOM manages its version.
 
 ## Domain mapping
 
@@ -30,7 +40,10 @@ transaction. Repeating a score is idempotent. Clearing a score updates the summa
 zero ratings means count and average are zero. Each party rates at most once at a time.
 An existing score remains counted after bucket membership is revoked.
 
-There are no separate document, bucket, metadata or rating tables. `DocumentInstall`
+There are no separate document, bucket, metadata or rating tables.
+`DocumentPluginInstall` at 1184 independently provisions the plugin registration,
+catalogue and Core dependency through the normal forward update sweep, including
+when the domain updates have already been recorded. `DocumentInstall`
 installs resource/arrangement types and classifications against their correct data
 concepts at update order 1185. `DocumentVersionInstall` at 1186 also installs the
 version classification for enterprises where the original update has already run.
@@ -39,8 +52,10 @@ Neither update imports document contents or grants access.
 ## Identity and access
 
 The consuming host binds `DocumentIdentityProvider.current()` to its verified,
-call-scoped `DocumentIdentity(partyId, enterpriseId, context, identityToken)`. The
-default provider denies access. Path IDs and body data never establish identity.
+call-scoped `DocumentIdentity(partyId, enterpriseId, context, identityToken,
+installationPartyId)`. The four-argument constructor defaults installation to the
+verified party. The default provider denies access. Path IDs and body data never
+establish identity or the user's relationship to an organisation installation.
 
 Personal and Social context owners must equal the verified party. Work context
 owners must equal the authorized enterprise. Personal buckets cannot be shared.
@@ -48,8 +63,10 @@ Social members use their own verified party contexts while the bucket retains it
 creator's context. A document can be linked to multiple buckets within the same
 stored context, including the same Social owner; it cannot cross realm/owner boundaries.
 
-Every operation checks the live actor, identifying credential, enterprise, Document
-Master system and system/party grants. System read permission is always required;
+Every operation, including reads and version history, checks current plugin
+installation, dependency consent and administrator policy before the live actor,
+identifying credential, enterprise and registration/party grants. Registration
+read permission is always required;
 creation also requires create permission and changes require update permission.
 The API supplies a stateless transaction; direct `IDocumentService` writes require a
 caller-owned stateless transaction. Compose operations by chaining their `Uni` values.

@@ -27,6 +27,37 @@ class DocumentStorageTest {
     private UUID token;
 
     private DocumentTestFixture fixture;
+    @Test void pluginRemovalAndAdministratorDenialRecheckExistingDocuments() {
+        assertFalse(com.guicedee.activitymaster.fsdm.client.services.systems.IMasterSystem.class
+                .isAssignableFrom(DocumentSystem.class));
+        var user = run(c -> PluginTestFixture.user(c.getItem1(), c.getItem2()));
+        var identity = new DocumentIdentity(user.partyId(), user.enterpriseId(),
+                new ActivityScope.Context(ActivityScope.Realm.WORK, user.enterpriseId()), user.identityToken());
+        assertThrows(SecurityException.class, () -> run(c -> service.listBuckets(c.getItem1(), c.getItem3(), identity, null, 0, 10)));
+        run(c -> PluginTestFixture.enable(c.getItem1(), c.getItem3(), user));
+        Bucket bucket = bucket(identity, "Plugin authority");
+        Document document = upload(identity, bucket, "Private plugin document");
+        run(c -> IGuiceContext.get(com.guicedee.activitymaster.fsdm.plugins.PluginService.class)
+                .remove(c.getItem1(), c.getItem3(), user, c.getItem3().getId(), user.partyId()));
+        assertThrows(SecurityException.class, () -> run(c -> service.download(c.getItem1(), c.getItem3(), identity, document.id())));
+        run(c -> IGuiceContext.get(com.guicedee.activitymaster.fsdm.plugins.PluginService.class)
+                .install(c.getItem1(), c.getItem3(), user, c.getItem3().getId(), user.partyId()));
+        assertThrows(SecurityException.class, () -> run(c -> service.versions(c.getItem1(), c.getItem3(), identity, document.id(), 0, 10)));
+        run(c -> PluginTestFixture.enable(c.getItem1(), c.getItem3(), user));
+        UUID coreId = run(c -> {
+            ISystemsService<?> systems = IGuiceContext.get(ISystemsService.class);
+            return systems.getActivityMaster(c.getItem1(), c.getItem2()).map(core -> core.getId());
+        });
+        try {
+            run(c -> IGuiceContext.get(com.guicedee.activitymaster.fsdm.plugins.PluginService.class)
+                    .setSystemAccess(c.getItem1(), c.getItem3(), user, c.getItem3().getId(), coreId, null, false));
+            assertThrows(SecurityException.class, () -> run(c -> service.version(c.getItem1(), c.getItem3(), identity, document.id(), document.versionId())));
+        } finally {
+            run(c -> IGuiceContext.get(com.guicedee.activitymaster.fsdm.plugins.PluginService.class)
+                    .setSystemAccess(c.getItem1(), c.getItem3(), user, c.getItem3().getId(), coreId, null, true));
+        }
+        assertNotNull(run(c -> service.download(c.getItem1(), c.getItem3(), identity, document.id())));
+    }
     @BeforeAll void setup() {
         fixture = DocumentTestFixture.get();
         service = fixture.service;
@@ -45,12 +76,12 @@ class DocumentStorageTest {
 
     private DocumentIdentity identity(UUID party) {
         return new DocumentIdentity(party, enterpriseId,
-                new ActivityScope.Context(ActivityScope.Realm.WORK, enterpriseId), token);
+                new ActivityScope.Context(ActivityScope.Realm.WORK, enterpriseId), fixture.tokenFor(party));
     }
 
     private DocumentIdentity social(UUID party) {
         return new DocumentIdentity(party, enterpriseId,
-                new ActivityScope.Context(ActivityScope.Realm.SOCIAL, party), token);
+                new ActivityScope.Context(ActivityScope.Realm.SOCIAL, party), fixture.tokenFor(party));
     }
 
     private Bucket bucket(DocumentIdentity identity, String name) {

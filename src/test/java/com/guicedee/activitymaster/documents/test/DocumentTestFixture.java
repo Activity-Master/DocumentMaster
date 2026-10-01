@@ -19,6 +19,8 @@ final class DocumentTestFixture {
     static final String ENTERPRISE = "DocumentTest";
     IDocumentService service;
     UUID enterpriseId, actorId, recipientId, outsiderId, token;
+    private final java.util.Map<UUID, UUID> tokens = new java.util.HashMap<>();
+    UUID tokenFor(UUID party) { return tokens.get(party); }
     private static DocumentTestFixture instance;
     static synchronized DocumentTestFixture get() {
         if (instance == null) instance = new DocumentTestFixture();
@@ -50,17 +52,16 @@ final class DocumentTestFixture {
                 .chain(e -> enterprises.loadUpdates(session, e))).await().atMost(Duration.ofMinutes(5));
         run(c -> {
             enterpriseId = c.getItem2().getId();
-            token = c.getItem4()[0];
-            IInvolvedPartyService<?> parties = IGuiceContext.get(IInvolvedPartyService.class);
-            return parties.createIdentificationType(c.getItem1(), c.getItem3(), "DocumentTestId", "Test party", token)
-                    .chain(() -> parties.create(c.getItem1(), c.getItem3(), new Pair<>("DocumentTestId", UUID.randomUUID().toString()), true, token))
-                    .chain(actor -> {
-                        actorId = actor.getId();
-                        return parties.create(c.getItem1(), c.getItem3(), new Pair<>("DocumentTestId", UUID.randomUUID().toString()), true, token);
-                    }).chain(recipient -> {
-                        recipientId = recipient.getId();
-                        return parties.create(c.getItem1(), c.getItem3(), new Pair<>("DocumentTestId", UUID.randomUUID().toString()), true, token);
-                    }).invoke(outsider -> outsiderId = outsider.getId()).replaceWithVoid();
+            return PluginTestFixture.user(c.getItem1(), c.getItem2()).chain(actor -> {
+                actorId = actor.partyId(); token = actor.identityToken(); tokens.put(actor.partyId(), actor.identityToken());
+                return PluginTestFixture.enable(c.getItem1(), c.getItem3(), actor);
+            }).chain(() -> PluginTestFixture.user(c.getItem1(), c.getItem2())).chain(recipient -> {
+                recipientId = recipient.partyId(); tokens.put(recipient.partyId(), recipient.identityToken());
+                return PluginTestFixture.enable(c.getItem1(), c.getItem3(), recipient);
+            }).chain(() -> PluginTestFixture.user(c.getItem1(), c.getItem2())).chain(outsider -> {
+                outsiderId = outsider.partyId(); tokens.put(outsider.partyId(), outsider.identityToken());
+                return PluginTestFixture.enable(c.getItem1(), c.getItem3(), outsider);
+            });
         });
     }
 

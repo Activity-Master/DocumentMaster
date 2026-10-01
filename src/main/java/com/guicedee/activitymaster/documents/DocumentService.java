@@ -97,9 +97,11 @@ public final class DocumentService implements IDocumentService {
             throw new SecurityException("Document system scope mismatch");
         if (session == null) throw new BadRequestException("Session required");
         if (!permission.equals("readallowed")) transaction(session);
-        return session.createNativeQuery("select 1 from security.securitytoken k where k.securitytoken=:token and " + live("k"), Integer.class)
+        return com.guicedee.client.IGuiceContext.get(com.guicedee.activitymaster.fsdm.plugins.PluginService.class)
+                .checkBuiltIn(session, system, identity.user(), identity.installationPartyId())
+                .chain(() -> session.createNativeQuery("select 1 from security.securitytoken k where k.securitytoken=:token and " + live("k"), Integer.class)
                 .setParameter("token", identity.identityToken().toString()).setParameter("enterprise", identity.enterpriseId())
-                .setMaxResults(1).getResultList().chain(found -> {
+                .setMaxResults(1).getResultList()).chain(found -> {
                     if (found.isEmpty()) return Uni.createFrom().failure(new SecurityException("Caller token unavailable"));
                     return session.createNativeQuery("select 1 from party.involvedparty p where p.involvedpartyid=:actor and " + live("p")
                                     + " and (:work=true or exists (select 1 from party.involvedpartyorganic o where o.involvedpartyorganicid=p.involvedpartyid and " + live("o") + "))", Integer.class)
